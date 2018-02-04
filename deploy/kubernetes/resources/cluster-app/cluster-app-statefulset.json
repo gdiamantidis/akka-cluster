@@ -1,0 +1,73 @@
+{
+  "apiVersion": "apps/v1beta1",
+  "kind": "StatefulSet",
+  "metadata": {
+    "name": "cluster-app"
+  },
+  "spec": {
+    "serviceName": "cluster-app",
+    "replicas": 3,
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "cluster-app"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "cluster-app",
+            "image": "gdiamantidis/akka-cluster",
+            "ports": [
+              {
+                "containerPort": 2551,
+                "name": "akka-remote"
+              },
+              {
+                "containerPort": 9000,
+                "name": "akka-http"
+              }
+            ],
+            "env": [
+              {
+                "name": "AKKA_ACTOR_SYSTEM_NAME",
+                "value": "cluster-app"
+              },
+              {
+                "name": "AKKA_REMOTING_BIND_PORT",
+                "value": "2551"
+              },
+              {
+                "name": "AKKA_REMOTING_BIND_HOST",
+                "value": "$HOSTNAME.cluster-app.default.svc.cluster.local"
+              },
+              {
+                "name": "AKKA_SEED_NODES",
+                "value": "cluster-app-0.cluster-app.default.svc.cluster.local:2551,cluster-app-1.cluster-app.default.svc.cluster.local:2551,cluster-app-2.cluster-app.default.svc.cluster.local:2551"
+              },
+              {
+                "name": "HTTP_HOST",
+                "value": "0.0.0.0"
+              },
+              {
+                "name": "HTTP_PORT",
+                "value": "9000"
+              },
+              {
+                "name": "CLUSTER_MEMBERSHIP_ASK_TIMEOUT",
+                "value": "5000"
+              }
+            ],
+            "readinessProbe": {
+              "tcpSocket": {
+                "port": 2551
+              },
+              "initialDelaySeconds": 10,
+              "timeoutSeconds": 120
+            }
+          }
+        ]
+      }
+    }
+  }
+}

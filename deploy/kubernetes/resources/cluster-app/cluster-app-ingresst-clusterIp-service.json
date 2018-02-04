@@ -1,0 +1,13 @@
+{
+  "apiVersion": "extensions/v1beta1",
+  "kind": "Ingress",
+  "metadata": {
+    "name": "cluster-app-ingress"
+  },
+  "spec": {
+    "backend": {
+      "serviceName": "cluster-app",
+      "servicePort": 9000
+    }
+  }
+}
