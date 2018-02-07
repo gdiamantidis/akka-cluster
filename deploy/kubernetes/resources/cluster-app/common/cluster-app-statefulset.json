@@ -17,7 +17,8 @@
         "containers": [
           {
             "name": "cluster-app",
-            "image": "gdiamantidis/akka-cluster",
+            "image": "gdiamantidis/akka-cluster:latest",
+            "imagePullPolicy": "Always",
             "ports": [
               {
                 "containerPort": 2551,
