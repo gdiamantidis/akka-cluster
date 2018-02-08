@@ -19,18 +19,37 @@ package com.lightbend.example.cluster
 import java.util.UUID
 
 import akka.actor.ActorRef
-import akka.http.scaladsl.server.{ Directives, Route }
+import akka.http.scaladsl.model.ws.{Message, TextMessage}
+import akka.http.scaladsl.server.{Directives, Route}
 import akka.http.scaladsl.settings.RoutingSettings
 import akka.pattern._
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Flow
+import com.lightbend.example.cluster.Protocol.{Response, WebRtcRequest}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Future}
 
 object HttpEndpoint extends PlayJsonSupport {
+
+
   def routes(router: ActorRef, clusterMembership: ActorRef, askTimeout: FiniteDuration)(implicit mat: ActorMaterializer, ec: ExecutionContext, rs: RoutingSettings): Route = {
     import Directives._
+    implicit val jsonSerializer = JsonSerializer.responseJsonSerializer
+
+    def handler: Flow[Message, Message, Any] = {
+      val query: String => Future[Message] =
+        s => router.ask(WebRtcRequest(s))(askTimeout).mapTo[Response].map(r => TextMessage.Strict(r.message))
+
+      var flow: Flow[Message, Message, _] =
+        Flow[Message].map {
+          case tm: TextMessage.Strict => tm.getStrictText
+        }.mapAsync[Message](1)(query)
+
+      flow
+    }
+
 
     Route.seal(
       path("members") {
@@ -54,6 +73,10 @@ object HttpEndpoint extends PlayJsonSupport {
               }
             }
           }
-        })
+        } ~
+        path("livestream") {
+          handleWebSocketMessages(handler)
+        }
+    )
   }
 }

@@ -1,7 +1,7 @@
 package com.lightbend.example.cluster
 
-import akka.actor.{ Actor, ActorLogging, Props }
-import com.lightbend.example.cluster.Protocol.Response
+import akka.actor.{Actor, ActorLogging, Props}
+import com.lightbend.example.cluster.Protocol.{Response, WebRtcRequest}
 
 object TestActor {
   def props(): Props = Props(new TestActor)
@@ -12,6 +12,7 @@ object Protocol {
   final case class Response(message: String)
 
   final case class Request(requestId: String)
+  final case class WebRtcRequest(message: String)
 
 }
 
@@ -31,6 +32,10 @@ class TestActor extends Actor with ActorLogging {
       val delay = scala.util.Random.nextInt(5)
       log.info(s"Request [$requestId] received. Replying in [$delay]")
       context.system.scheduler.scheduleOnce(delay seconds, sender(), Response(s"hello from akka-http. [${self.path.name}]"))
+    }
+
+    case m:WebRtcRequest => {
+        sender() ! Response(s"Echoed ${m.message} from ${self.path.name}")
     }
 
     case _ => {
