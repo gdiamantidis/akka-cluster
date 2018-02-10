@@ -1,22 +1,8 @@
-/*
- * Copyright 2017 Lightbend, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.lightbend.example.cluster
 
-import akka.cluster.{ Member, MemberStatus }
+import akka.cluster.{Member, MemberStatus}
+import com.lightbend.example.cluster.Protocol._
+import play.api.libs.json.Json._
 import play.api.libs.json._
 
 object JsonSerializer {
@@ -27,13 +13,13 @@ object JsonSerializer {
     override def writes(o: MemberStatus): JsValue =
       JsString(
         o match {
-          case MemberStatus.Joining  => "Joining"
+          case MemberStatus.Joining => "Joining"
           case MemberStatus.WeaklyUp => "WeaklyUp"
-          case MemberStatus.Up       => "Up"
-          case MemberStatus.Down     => "Down"
-          case MemberStatus.Exiting  => "Exiting"
-          case MemberStatus.Leaving  => "Leaving"
-          case MemberStatus.Removed  => "Removed"
+          case MemberStatus.Up => "Up"
+          case MemberStatus.Down => "Down"
+          case MemberStatus.Exiting => "Exiting"
+          case MemberStatus.Leaving => "Leaving"
+          case MemberStatus.Removed => "Removed"
         })
   }
 
@@ -49,5 +35,38 @@ object JsonSerializer {
   }
 
   implicit val membershipInfoJsonSerializer: Format[ClusterMembership.MembershipInfo] = Json.format
-  implicit val responseJsonSerializer: Format[Protocol.Response] = Json.format
+  implicit val startLiveStreamRequestFmt: Format[SdpOffer] = Json.format[SdpOffer]
+  implicit val iceCandidateFmt: Format[IceCandidate] = Json.format[IceCandidate]
+  implicit val sdpAnswerFmt: Format[SdpAnswer] = Json.format[SdpAnswer]
+  implicit val tempFmt: Format[TempMessage] = Json.format[TempMessage]
+  implicit val webRtcFmt: Format[WebRtcMessage] = new Format[WebRtcMessage] {
+    def reads(json: JsValue): JsResult[WebRtcMessage] = {
+
+      def fromType(`type`: String, data: JsValue): JsResult[WebRtcMessage] = `type` match {
+        case "sdpOffer" => Json.fromJson[SdpOffer](data)
+        case "iceCandidate" => Json.fromJson[IceCandidate](data)
+        case _ => JsError(s"Unexpected JSON value $json")
+      }
+
+      for {
+        theType <- (json \ "type").validate[String]
+        result <- fromType(theType, json)
+      } yield result
+    }
+
+    def writes(msg: WebRtcMessage): JsValue = {
+      def ofType(value: JsValue, t: String): JsValue = {
+        value.as[JsObject].deepMerge(Json.obj("type" -> t))
+      }
+
+      msg match {
+        case m: SdpOffer => ofType(Json.toJson(m)(startLiveStreamRequestFmt), "sdpOffer")
+        case m: SdpAnswer => ofType(Json.toJson(m)(sdpAnswerFmt), "sdpAnswer")
+        case m: IceCandidate => ofType(Json.toJson(m)(iceCandidateFmt), "iceCandidate")
+        case m: TempMessage => ofType(Json.toJson(m)(tempFmt), "temp")
+      }
+
+    }
+  }
+
 }

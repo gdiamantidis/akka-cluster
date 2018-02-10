@@ -1,19 +1,3 @@
-/*
- * Copyright 2017 Lightbend, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.lightbend.example.cluster
 
 import java.util.UUID
@@ -25,29 +9,35 @@ import akka.http.scaladsl.settings.RoutingSettings
 import akka.pattern._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
-import com.lightbend.example.cluster.Protocol.{Response, WebRtcRequest}
+import com.lightbend.example.cluster.Protocol.WebRtcMessage
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import play.api.libs.json.{JsResult, JsSuccess, Json}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 object HttpEndpoint extends PlayJsonSupport {
 
-
-  def routes(router: ActorRef, clusterMembership: ActorRef, askTimeout: FiniteDuration)(implicit mat: ActorMaterializer, ec: ExecutionContext, rs: RoutingSettings): Route = {
+  def routes(router: ActorRef, coordinator: ActorRef, clusterMembership: ActorRef, askTimeout: FiniteDuration)(implicit mat: ActorMaterializer, ec: ExecutionContext, rs: RoutingSettings): Route = {
     import Directives._
-    implicit val jsonSerializer = JsonSerializer.responseJsonSerializer
+    implicit val webRtcFmt = JsonSerializer.webRtcFmt
 
     def handler: Flow[Message, Message, Any] = {
       val query: String => Future[Message] =
-        s => router.ask(WebRtcRequest(s))(askTimeout).mapTo[Response].map(r => TextMessage.Strict(r.message))
+        payload => {
+          val value: JsResult[WebRtcMessage] = Json.fromJson[WebRtcMessage](Json.parse(payload))
+          value match {
+            case v: JsSuccess[WebRtcMessage] =>
+              coordinator.ask(v.value)(askTimeout)
+                .mapTo[WebRtcMessage]
+                .map(r => TextMessage.Strict(Json.toJson(r).toString()))
+            case _ => Future.successful(TextMessage.Strict("error"))
+          }
+        }
 
-      var flow: Flow[Message, Message, _] =
-        Flow[Message].map {
-          case tm: TextMessage.Strict => tm.getStrictText
-        }.mapAsync[Message](1)(query)
-
-      flow
+      Flow[Message].map {
+        case tm: TextMessage.Strict => tm.getStrictText
+      }.mapAsync[Message](1)(query)
     }
 
 
@@ -67,9 +57,9 @@ object HttpEndpoint extends PlayJsonSupport {
           pathEndOrSingleSlash {
             get {
               complete {
-                implicit val jsonSerializer = JsonSerializer.responseJsonSerializer
-                router.ask(Protocol.Request(UUID.randomUUID().toString))(askTimeout)
-                  .mapTo[Protocol.Response]
+//                implicit val jsonSerializer = JsonSerializer.tempFmt
+                router.ask(Protocol.TempMessage(UUID.randomUUID().toString, ""))(askTimeout)
+                  .mapTo[Protocol.TempMessage]
               }
             }
           }

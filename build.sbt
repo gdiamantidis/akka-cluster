@@ -26,12 +26,13 @@ libraryDependencies ++= List(
   "org.iq80.leveldb" % "leveldb" % "0.7",
   "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8",
   "com.typesafe.akka" %% "akka-remote" % akkaVersion,
+  "org.json4s" %% "json4s-jackson" % "3.5.3",
+  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
 
   "com.typesafe.akka" %% "akka-http" % "10.0.9",
   "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.9",
   "org.scala-lang" % "scala-library" % "2.11.7",
-
-
 
   "org.scalatest"     %% "scalatest"           % "3.0.1"     % "test",
   "com.typesafe.akka" %% "akka-testkit"        % akkaVersion % "test"

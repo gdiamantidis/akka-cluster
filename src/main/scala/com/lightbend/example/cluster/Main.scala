@@ -19,8 +19,8 @@ package com.lightbend.example.cluster
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-import akka.actor.{ ActorRef, ActorSystem }
-import akka.cluster.routing.{ ClusterRouterPool, ClusterRouterPoolSettings }
+import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.cluster.routing.{ClusterRouterPool, ClusterRouterPoolSettings}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.settings.RoutingSettings
 import akka.routing.ScatterGatherFirstCompletedPool
@@ -62,10 +62,12 @@ object Main {
 
     lazy val router: ActorRef = actorSystem.actorOf(
       ClusterRouterPool(
-        new ScatterGatherFirstCompletedPool(6, 5 seconds),
-        new ClusterRouterPoolSettings(10, 1, true, useRoles = Set.empty[String])).props(TestActor.props()), "sampleScatterGather-" + UUID.randomUUID().toString)
+        new ScatterGatherFirstCompletedPool(6, 500 seconds),
+        new ClusterRouterPoolSettings(10, 10, true, useRoles = Set.empty[String])).props(SignalingActor.props()), "signalling-" + UUID.randomUUID().toString)
 
-    val route = HttpEndpoint.routes(router, clusterMembership, clusterMembershipAskTimeout)
+    val signallingCoordinator: ActorRef = actorSystem.actorOf(SignallingCoordinator.props(router), "coordinator-" +UUID.randomUUID().toString)
+
+    val route = HttpEndpoint.routes(router, signallingCoordinator, clusterMembership, clusterMembershipAskTimeout)
 
     http.bindAndHandle(route, httpHost, httpPort)
   }
