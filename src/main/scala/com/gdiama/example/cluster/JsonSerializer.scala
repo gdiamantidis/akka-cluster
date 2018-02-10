@@ -1,7 +1,7 @@
-package com.lightbend.example.cluster
+package com.gdiama.example.cluster
 
 import akka.cluster.{Member, MemberStatus}
-import com.lightbend.example.cluster.Protocol._
+import com.gdiama.example.cluster.Protocol._
 import play.api.libs.json.Json._
 import play.api.libs.json._
 

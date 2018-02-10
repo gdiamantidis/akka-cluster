@@ -1,4 +1,4 @@
-package com.lightbend.example.cluster
+package com.gdiama.example.cluster
 
 import akka.actor.{ Actor, Props }
 import akka.cluster.ClusterEvent.MemberEvent

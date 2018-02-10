@@ -1,4 +1,4 @@
-package com.lightbend.example.cluster
+package com.gdiama.example.cluster
 
 import java.util.UUID
 
@@ -9,7 +9,7 @@ import akka.http.scaladsl.settings.RoutingSettings
 import akka.pattern._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
-import com.lightbend.example.cluster.Protocol.WebRtcMessage
+import com.gdiama.example.cluster.Protocol.WebRtcMessage
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import play.api.libs.json.{JsResult, JsSuccess, Json}
 

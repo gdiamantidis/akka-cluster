@@ -1,11 +1,11 @@
-package com.lightbend.example.cluster.util.metrics
+package com.gdiama.example.cluster.util.metrics
 
 import java.lang.System.{ currentTimeMillis => newTimestamp }
 
 import akka.actor.{ ActorSystem, Address }
 import akka.cluster.Cluster
 import akka.cluster.metrics._
-import com.lightbend.example.cluster.util.metrics.CustomMetric.KmsUsed
+import CustomMetric.KmsUsed
 
 class KmsCapacityMetricsCollector(address: Address, decayFactor: Double) extends MetricsCollector {
 

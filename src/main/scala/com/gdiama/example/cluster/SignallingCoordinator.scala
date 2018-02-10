@@ -1,11 +1,11 @@
-package com.lightbend.example.cluster
+package com.gdiama.example.cluster
 
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
-import com.lightbend.example.cluster.Protocol._
+import Protocol._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration

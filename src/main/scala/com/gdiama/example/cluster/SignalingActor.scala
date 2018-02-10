@@ -1,7 +1,7 @@
-package com.lightbend.example.cluster
+package com.gdiama.example.cluster
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import com.lightbend.example.cluster.Protocol._
+import Protocol._
 
 object SignalingActor {
   def props(): Props = Props(new SignalingActor)

@@ -1,16 +1,9 @@
-/*
- * Copyright © 2014-2016 Lightbend, Inc. All rights reserved.
- * No information contained herein may be reproduced or transmitted in any form
- * or by any means without the express written permission of Lightbend, Inc.
- */
-
-package com.lightbend.example.cluster
+package com.gdiama.example.cluster
 
 import akka.actor.{ ActorSystem, Props }
 import akka.cluster.ClusterEvent.{ MemberJoined, MemberRemoved, MemberUp }
 import akka.cluster.{ MemberStatus, TestCluster }
 import akka.testkit.TestProbe
-import com.lightbend.example.cluster
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpec }
 
 import scala.concurrent.Await
@@ -30,7 +23,7 @@ class ClusterMembershipSpec extends WordSpec with Matchers with BeforeAndAfterAl
   "cluster membership" should {
     "keep track of member states" in {
       val client = TestProbe()
-      val clusterMembership = actorSystem.actorOf(Props(new cluster.ClusterMembershipSpec.TestClusterMembership()))
+      val clusterMembership = actorSystem.actorOf(Props(new ClusterMembershipSpec.TestClusterMembership()))
 
       val member1 = TestCluster.createMember(systemName, "10.0.0.1", 9004, 10L, Set("server"))
 

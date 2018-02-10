@@ -1,8 +1,8 @@
-package com.lightbend.example.cluster.util.metrics
+package com.gdiama.example.cluster.util.metrics
 
 import akka.actor.Address
 import akka.cluster.metrics.{ CapacityMetricsSelector, NodeMetrics }
-import com.lightbend.example.cluster.util.metrics.CustomMetric.KnsInUse
+import CustomMetric.KnsInUse
 
 @SerialVersionUID(1L)
 case object KmsCapacityMetricsSelector extends CapacityMetricsSelector {

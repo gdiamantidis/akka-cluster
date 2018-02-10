@@ -1,4 +1,4 @@
-package com.lightbend.example.cluster.util.metrics
+package com.gdiama.example.cluster.util.metrics
 
 import akka.actor.Address
 import akka.cluster.metrics.NodeMetrics
